@@ -98,8 +98,7 @@ export default class GPUConnector {
     commandEncoder = undefined,
     end = false
   ) {
-    const end = end || commandEncoder === undefined
-    const commandEncoder = commandEncoder || this.device.createCommandEncoder();
+    const coercedCommandEncoder = commandEncoder || this.device.createCommandEncoder();
 
     const sourceBuff = this.getBuffer(name);
     size = size || sourceBuff.size;
@@ -110,7 +109,7 @@ export default class GPUConnector {
       GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST
     );
 
-    commandEncoder.copyBufferToBuffer(
+    coercedCommandEncoder.copyBufferToBuffer(
       sourceBuff,
       offset,
       destBuff,
@@ -118,8 +117,8 @@ export default class GPUConnector {
       size
     );
 
-    if (end) {
-      this.submitCommandEncoder(commandEncoder);
+    if (end || commandEncoder === undefined) {
+      this.submitCommandEncoder(coercedCommandEncoder);
       await this.waitForDevice();
     }
   
@@ -127,9 +126,9 @@ export default class GPUConnector {
   }
 
   async copyBuffers(perBufferParams, commandEncoder = undefined) {
-    const commandEncoder = commandEncoder || this.device.createCommandEncoder();
+    const coercedCommandEncoder = commandEncoder || this.device.createCommandEncoder();
     
-    return await Promise.all(perBufferParams.map(({name, offset, size}, i) => this.copyBuffer(name, offset, size, commandEncoder, i === perBufferParams.length - 1)))
+    return await Promise.all(perBufferParams.map(({name, offset, size}, i) => this.copyBuffer(name, offset, size, coercedCommandEncoder, i === perBufferParams.length - 1)))
   }
 
   async printBuffer(name, TypedArrayConstructor, offset = 0, size, commandEncoder = undefined) {
