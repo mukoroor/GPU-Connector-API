@@ -54,10 +54,19 @@ export default class GPUConnector {
     this.setBuffer(name, this.allocateBuffer(size, usage, name));
   }
 
-  createBuffer(name, data, usage, TypedArrayConstructor=undefined) {
+  createCachedBuffer(name, data, usage, TypedArrayConstructor=undefined) {
     if (TypedArrayConstructor) data = TypedArrayConstructor(data);
     this.allocateAndCacheBuffer(name, data.byteLength, usage);
     this.writeCachedBuffer1to1(name, data);
+    return this.getBuffer(name);
+  }
+
+
+  createBuffer(name, data, usage, TypedArrayConstructor=undefined) {
+    if (TypedArrayConstructor) data = TypedArrayConstructor(data);
+    const buffer = this.allocateBuffer(name, data.byteLength, usage);
+    this.writeBuffer1to1(buffer, data);
+    return buffer;
   }
 
   writeBuffer(buffer, bufferOffset, data, dataOffset, dataSize, TypedArrayConstructor=undefined) {
